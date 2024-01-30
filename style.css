@@ -54,14 +54,14 @@ li a, .thumbnail-caption a {
   -webkit-transition: color 0.2s ease-out;
   -moz-transition: color 0.2s ease-out;
   transition: color 0.2s ease-out;
-  border-bottom: 1px solid #e33434;
+  border-bottom: 1px solid #0047AB;
   padding-bottom: 1px;
 }
 
 /* line 84, ../scss/_custom.scss */
 li a:hover, .thumbnail-caption a:hover {
   /*color: #5b8aa0;*/  
-  color: #af320c;
+  color: #0047AB;
   /*border-bottom: 1px solid #5b8aa0 !important;*/
   border: none !important;
 }
@@ -193,8 +193,8 @@ div div header h2 a:hover, header h2 a:focus {
 
 /* line 291, ../scss/_custom.scss */
 nav {
-  border-top: 0px solid #e33434;
-  border-bottom: 0px solid #e33434;
+  border-top: 0px solid #0047AB;
+  border-bottom: 0px solid #0047AB;
   margin-bottom: 3em;
   background-color: white;
 }
@@ -225,6 +225,7 @@ nav ul.inline-list-custom li {
 /* line 320, ../scss/_custom.scss */
 nav ul li a, nav ul li a:hover {
   border: none !important;
+  text-decoration: none;
 }
 
 
@@ -262,7 +263,7 @@ Project
   font-weight: 300;
   font-style: normal;
   font-weight: bold;
-  font-size: 0.875rem;
+  font-size: 1.2rem;
   line-height: 1.5;
   letter-spacing: 0;
   text-transform: none;
@@ -739,7 +740,7 @@ p {
 /* Default Link Styles */
 /* line 152, ../bower_components/foundation/scss/foundation/components/_type.scss */
 a {
-  color: #e33434;
+  color: #0047AB;
   /*color: #ed225d;*/
   /*color: #4286f4;*/
   text-decoration: none;
@@ -761,7 +762,7 @@ a img {
 p {
   font-family: inherit;
   font-weight: normal;
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: 1.5;
   margin-bottom: 1rem;
   margin-top: 1rem;
