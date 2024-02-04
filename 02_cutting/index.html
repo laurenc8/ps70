@@ -37,7 +37,9 @@
                 </p>
 
                 <p style="text-align: left">
-                    My first attempt looked like this:
+                    The process involved first sketching the design in Fusion 360, exporting it as a DXF, cleaning the file up
+                    in Rhino, and then using the laser cutter to cut it out of a sheet of cardboard. My initial set of parameters
+                    in Fusion 360 included: length, width, height, thickness, and num_fingers. My first attempt looked like this:
                 </p>
 
                 <div class="image-row">
@@ -59,10 +61,54 @@
                     As expected, the pieces didn't fit together perfectly on the first try. After talking to Bobby, we concluded
                     that there were two major things to fix. First, I needed to make the scoring lines deeper because the
                     creases were a bit stiff. Second, I had to make the fingers larger (both longer and wider); if they are too
-                    small, they won't catch very well. As seen in the right picture, the tiny fingers didn't fit really well and
-                    weren't strong enough to hold the walls together without falling apart.
+                    small, they won't catch. As seen in the right picture, the tiny fingers didn't fit really well and weren't
+                    strong enough to hold the walls together.
                 </p>
 
+                <div class="image-row">
+                    <figure>
+                        <img src="./box_v2_fusion.png" alt="box v2 in Fusion 360" width="300">
+                        <figcaption>Box v2 in Fusion 360</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="./box_v2.jpeg" alt="box v2" width="400">
+                        <figcaption>Box v2</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="./box_v2_fingers.jpeg" alt="box v2's fingers" width="250">
+                        <figcaption>Box v2's fingers</figcaption>
+                    </figure>
+                </div>
+
+                <p style="text-align: left">
+                    After fixing those two things, I printed a second box. This version was better; it was just the fingers that
+                    were a bit too loose. Even though they fit into each other, they wouldn't stay together by themselves. (If 
+                    you look really closely at the picture on the right, you can see a very thin gap between the fingers.) This
+                    is likely due to kerf, the material that is removed when the laser burns through the cardboard; this amount
+                    changes based on the material you’re cutting (denser material = larger kerf because the laser is burning away
+                    longer). To fix this, I added a parameter to the Fusion 360 design for kerf, and set it to 0.5 mm. I also
+                    decided to increase all the other dimension parameters too since box v2 was a little small.
+                </p>
+
+                <div class="image-row">
+                    <figure>
+                        <img src="./box_v3_fusion.png" alt="box v3 in Fusion 360" width="300">
+                        <figcaption>Box v3 in Fusion 360</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="./box_v3.jpeg" alt="box v3" width="400">
+                        <figcaption>Box v3</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="./box_v3_fingers.jpeg" alt="box v3's fingers" width="250">
+                        <figcaption>Box v3's fingers</figcaption>
+                    </figure>
+                </div>
+
+                <p style="text-align: left">
+                    Everything finally stayed together! I think the kerf could have been slightly smaller, maybe 0.4 mm,
+                    because the fingers were a bit tight. Luckily, cardboard is squishy enough for me to wiggle them in.
+                </p>
             </li>
 
 		</ul>
