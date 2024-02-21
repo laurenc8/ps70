@@ -4,12 +4,16 @@
 <title>PS70: Intro to Digital Fabrication </title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="../style.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/arduino-light.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/arduino.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script> 
 
 <div id="header">
     <iframe src="../head.html"  style="border: none;" width="100%" height="180px;" scrolling="no" ></iframe>
 </div>
 
-<h1  style="text-align: center">Week 4</h1>
+<h1  style="text-align: center">Microcontroller Programming</h1>
 
 <br>
 <br>
@@ -22,6 +26,116 @@
 		<ul class="small-block-grid-1 medium-block-grid-1 large-block-grid-1 inline-list-custom">
 
 			<li>
+                <p style="text-align: left">
+                    We covered the basics of programming, the Arduino board, and electronics.
+                </p>
+
+                <h3>
+                    Arduino Program
+                </h3>
+
+                <p style="text-align: left">
+                    The assignment was to program an Arduino board to do something, so I decided to adjust the speed of my
+                    kinetic scultpure from last week. Due to the unadjustable 5V power source, the flower bloomed at an
+                    extremely fast (unideal) speed...
+                </p>
+                <figure>
+                    <video controls height="400">
+                        <source src="../03_tools/final_flower.mp4" type="video/mp4">
+                    </video>
+                    <figcaption>Flower Sculpture from Last Week</figcaption>
+                </figure>
+
+                <p style="text-align: left">
+                    In lab, we used a potentiometer to allow a user to dynamically control the brightness of an LED. A
+                    potentiometer is a variable resistor with three pins. When the external sides of the potentiometer are
+                    connected to voltage and ground, the middle leg will give the difference in voltage as you turn the knob.
+                    <code>analogRead()</code> outputs a value between 0 and 1023, a representation of the voltage on the pin.
+                </p>
+                <p style="text-align: left">
+                    We also used the L9110 H Bridge Power Driver to control the speed and direction of a motor. The 
+                    <code>analogWrite()</code> function uses a technique called Pulse Width Modulation (PWM). PWM turns the
+                    output pin <code>HIGH</code> and <code>LOW</code> over a fixed period of time in extremely fast intervals.
+                    The percentage of time a pin is <code>HIGH</code> in a period is called duty cycle. The argument of
+                    <code>analogWrite()</code> that controls this setting takes values between 0 and 255.
+                </p>
+                <figure>
+                    <img src="./pwm.png" alt="pwm" width="600">
+                    <figcaption>PWM 50</figcaption>
+                </figure>
+                <p style="text-align: left">
+                    Combining these two techniques, I built a circuit that uses a potentiometer to control the speed of the
+                    motor's rotation! I also made a few modifications for my use case:
+                </p>
+                <ul>
+                    <li>
+                        <p style="text-align: left">
+                            The digital pins on the Arduino did not supply enough current to turn a motor (the LED required
+                            much less current), so I had to edit the circuit so that the motor also used the 5V pin.
+                        </p>
+                    </li>
+                    <li>
+                        <p style="text-align: left">
+                            The motor did not turn with less than ~100 speed. Hence, instead of mapping the 0-1023 range of
+                            the potentiometer to the full range of 0-255 speed, I mapped it to 100-255. This way, no matter
+                            where the user turns the potentiometer knob, the flower will always be blooming. :)
+                        </p>
+                    </li>
+                </ul>
+
+                <p style="text-align: left">
+                    I found the serial prints really helpful for debugging and making sure that my <code>potVal</code> and
+                    <code>motorVal</code> variables were updating correctly. My final code is below:
+                </p>
+
+                <pre style="text-align: left"><code class="language-arduino">
+    const int potPin = A0;  // define Analog In pin A0 for the potentiometer
+    int potVal;
+    const int motorPin = 6; // define Digital pin 6 for the motor
+    int motorVal;
+
+    void setup() {
+        // runs once
+        Serial.begin(9600);
+        pinMode(potPin, INPUT);    // specify potPin as input
+        pinMode(motorPin, OUTPUT); // specify motorPin as output
+    }
+    
+    void loop() {
+        // loops forever
+        potVal = analogRead(potPin); // read in the potVal from potPin
+        motorVal = map(potVal, 0, 1023, 100, 255); // map potVal range to motorVal range
+        analogWrite(motorPin, motorVal); // write the motorVal to motorPin
+        Serial.println(motorVal);  // optional print statement, can change motorVal to potVal for debugging
+    }
+                </code></pre>
+
+                <p style="text-align: left">
+                    Here is a circuit diagram and schematic:
+                </p>
+
+                <div class="image-row">
+                    <figure>
+                        <img src="./circuit_diagram.jpeg" alt="circuit diagram" width="600">
+                        <figcaption>Circuit Diagram</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="./schematic.png" alt="circuit schematic" width="400">
+                        <figcaption>Circuit Schematic</figcaption>
+                    </figure>
+                </div>
+
+                <p style="text-align: left">
+                    And here's the final product!
+                </p>
+
+                <figure>
+                    <video controls height="400">
+                        <source src="final_flower.mp4" type="video/mp4">
+                    </video>
+                    <figcaption>New Flower Sculpture</figcaption>
+                </figure>
+
 			</li>
 
 		</ul>
