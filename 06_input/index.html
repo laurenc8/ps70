@@ -4,12 +4,16 @@
 <title>PS70: Intro to Digital Fabrication </title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="../style.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/arduino-light.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/arduino.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script> 
 
 <div id="header">
     <iframe src="../head.html"  style="border: none;" width="100%" height="180px;" scrolling="no" ></iframe>
 </div>
 
-<h1  style="text-align: center">Week 6</h1>
+<h1  style="text-align: center">Electronic Input Devices</h1>
 
 <br>
 <br>
@@ -22,6 +26,311 @@
 		<ul class="small-block-grid-1 medium-block-grid-1 large-block-grid-1 inline-list-custom">
 
 			<li>
+                <p style="text-align: left">
+                    We learned about the concept of voltage dividers, capacitance, and calibration. We also covered different
+                    kinds of capacitive sensors: potentiometers, thermistors, force sensors, light sensors, and more!
+                </p>
+
+                <h3>
+                    Capacitive Sensor
+                </h3>
+
+                <p style="text-align: left">
+                    The first assignment was to make a capacitive sensor to measure a physical quantity with your
+                    microcontroller.
+                </p>
+
+                <h3>
+                    Another Sensor
+                </h3>
+
+                <p style="text-align: left">
+                    The second assignment was to configure and use another sensor, and include at least one output device. Since
+                    I need to measure distance from walls in my final project, I decided to use the ultrasonic distance sensor.
+                    The sensor works by sending out a signal from the transmitter and then listening for a response in the
+                    receiver. It only senses objects within a particular field of view.
+                </p>
+
+                <div class="image-row">
+                    <figure>
+                        <img src="./ultrasonic_sensor.png" alt="ultrasonic sensor" width="600">
+                        <figcaption><a href="https://osoyoo.com/2018/09/18/micro-bit-lesson-using-the-ultrasonic-module/">Ultrasonic Sensor</span></a></figcaption>
+                    </figure>
+                    <figure>
+                        <img src="./field_of_view.png" alt="field of view" width="350">
+                        <figcaption><a href="https://itp.nyu.edu/physcomp/labs/lab-ultrasonic-distance-sensor/">Field of View</a></figcaption>
+                    </figure>
+                </div>
+
+                <p style="text-align: left">
+                    To test, I placed my cardboard box from Week 1 in front of the sensor and moved it forwards and backwards.
+                    Here is what my setup looked like, as well as a schematic of my circuit:
+                </p>
+
+                <div class="image-row">
+                    <figure>
+                        <img src="./ultrasonic_setup.jpeg" alt="setup" width="300">
+                        <figcaption>Setup</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="./ultrasonic_schematic.png" alt="circuit schematic" width="600">
+                        <figcaption><a href="https://itp.nyu.edu/physcomp/labs/lab-ultrasonic-distance-sensor/">Circuit Schematic</a></figcaption>
+                    </figure>
+                </div>
+
+                <p style="text-align: left">
+                    The first iteration of my code was able to reliably measure the distance. It works by first setting the
+                    Trigger pin LOW and then setting it HIGH to initiate the trigger pulse. After 10 microseconds, you 
+                    set it LOW again to end the trigger pulse. You then use the <code>pulseIn()</code> function to measure the
+                    length of the pulse on the Echo pin. Finally, you do the math to convert the pulse time to distance in
+                    centimeters.
+                </p>
+
+                <pre style="text-align: left; height: 400px; overflow: scroll;"><code class="language-arduino">
+const int trigPin = 9;
+const int echoPin = 10;
+
+void setup() {
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);
+    Serial.begin(9600);
+}
+
+void loop() {
+    digitalWrite(trigPin, LOW); // Set the Trigger pin LOW to start a pulse
+    delayMicroseconds(2);
+    digitalWrite(trigPin, HIGH); // Set the Trigger pin HIGH
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW); // Set the Trigger pin LOW again to complete the pulse
+    
+    long duration = pulseIn(echoPin, HIGH); // Listen for a pulse on the Echo pin
+    Serial.print("Duration: ");
+    Serial.println(duration);
+    delay(10); // Delay between readings
+}
+                </code></pre>
+
+                <p style="text-align: left">
+                    I then refactored the code to use the C++ class structure, creating an <code>Ultrasonic</code> class with
+                    functions to <code>sendSignal</code> and <code>measureSignal</code>.
+                </p>
+
+                <pre style="text-align: left; height: 400px; overflow: scroll;"><code class="language-arduino">
+class Ultrasonic {
+    public:
+    int trigPin;
+    int echoPin;
+    float distance;
+    
+    Ultrasonic(int pin1, int pin2) {
+        trigPin = pin1;
+        echoPin = pin2;
+        pinMode(trigPin, OUTPUT);
+        pinMode(echoPin, INPUT);
+    }
+    
+    void sendSignal() {
+        digitalWrite(trigPin, LOW); // Set the Trigger pin LOW to start a pulse
+        delayMicroseconds(2);
+        digitalWrite(trigPin, HIGH); // Set the Trigger pin HIGH
+        delayMicroseconds(10);
+        digitalWrite(trigPin, LOW); // Set the Trigger pin LOW again to complete the pulse
+    }
+    
+    int measureSignal() {
+        long duration = pulseIn(echoPin, HIGH); // Listen for a pulse on the Echo pin
+        Serial.print("Duration: ");
+        Serial.println(duration);
+        return duration;
+    }
+};
+    
+void setup() {
+    Serial.begin(9600);
+}
+    
+Ultrasonic ultrasonic(9, 10);
+float distance = 0;
+
+void loop() {
+    ultrasonic.sendSignal();
+    distance = ultrasonic.measureSignal();
+}
+                    </code></pre>
+                
+                    <p style="text-align: left">
+                        However, the code used the <code>delay()</code> function, so I replaced it with <code>micros()</code>.
+                        This involved creating a <code>measured</code> variable with 4 possible values that tracked which step
+                        of the process I was in.
+                    </p>
+
+                <pre style="text-align: left; height: 400px; overflow: scroll;"><code class="language-arduino">
+class Ultrasonic {
+    public:
+    int trigPin;
+    int echoPin;
+    float distance;
+    int signalInterval;
+    unsigned long signalStartTime;
+    int measured = 3;
+
+    Ultrasonic(int pin1, int pin2, int interval) {
+        trigPin = pin1;
+        echoPin = pin2;
+        signalInterval = interval; // in microseconds
+        pinMode(trigPin, OUTPUT);
+        pinMode(echoPin, INPUT);
+    }
+
+    void sendSignal() {
+        if ((micros() - signalStartTime > signalInterval) && (measured == 3)) {
+            signalStartTime = micros();
+            digitalWrite(trigPin, LOW); // Set the Trigger pin LOW to start a pulse
+            measured = 2;
+        }
+        else if ((micros() - signalStartTime > 2) && (measured == 2)) {
+            digitalWrite(trigPin, HIGH); // Set the Trigger pin HIGH
+            measured = 1;
+        }
+        else if ((micros() - signalStartTime > 12) && (measured == 1)) {
+            digitalWrite(trigPin, LOW); // Set the Trigger pin LOW again to complete the pulse
+            measured = 0; // Signal is done so ready to measure
+        }
+    }
+
+    int measureSignal() {
+        if ((micros() - signalStartTime > signalInterval) && (measured == 0)) {
+            long duration = pulseIn(echoPin, HIGH); // Listen for a pulse on the Echo pin
+            Serial.print("Duration: ");
+            Serial.println(duration);
+            measured = 3;
+            return duration;
+        }
+    }
+};
+
+void setup() {
+    Serial.begin(9600);
+}
+
+Ultrasonic ultrasonic(9, 10, 1000);
+
+void loop() {
+    ultrasonic.sendSignal();
+    ultrasonic.measureSignal();
+}
+                    </code></pre>
+
+                    <p style="text-align: left">
+                        Finally, I added an output device--an LED that would get brighter as the box moved farther away.
+                        I converted the measured pulse duration (in microseconds) to brightness (which ranges from 0 to 255) by
+                        dividing by 15, but this factor was an arbitrary choice (within reasonable limits). The final code with
+                        a new <code>Led</code> class is below.
+                    </p>
+
+                    <pre style="text-align: left; height: 400px; overflow: scroll;"><code class="language-arduino">
+class Ultrasonic {
+    public:
+    int trigPin;
+    int echoPin;
+    float distance;
+    int signalInterval;
+    unsigned long signalStartTime;
+    int measured = 3;
+
+    Ultrasonic(int pin1, int pin2, int interval) {
+        trigPin = pin1;
+        echoPin = pin2;
+        signalInterval = interval; // in microseconds
+        pinMode(trigPin, OUTPUT);
+        pinMode(echoPin, INPUT);
+    }
+
+    void sendSignal() {
+        if ((micros() - signalStartTime > signalInterval) && (measured == 3)) {
+            signalStartTime = micros();
+            digitalWrite(trigPin, LOW); // Set the Trigger pin LOW to start a pulse
+            measured = 2;
+        }
+        else if ((micros() - signalStartTime > 2) && (measured == 2)) {
+            digitalWrite(trigPin, HIGH); // Set the Trigger pin HIGH
+            measured = 1;
+        }
+        else if ((micros() - signalStartTime > 12) && (measured == 1)) {
+            digitalWrite(trigPin, LOW); // Set the Trigger pin LOW again to complete the pulse
+            measured = 0; // Signal is done so ready to measure
+        }
+    }
+
+    int measureSignal() {
+        if ((micros() - signalStartTime > signalInterval) && (measured == 0)) {
+            long duration = pulseIn(echoPin, HIGH); // Listen for a pulse on the Echo pin
+            Serial.print("Duration: ");
+            Serial.println(duration);
+            measured = 3;
+            return duration;
+        }
+    }
+};
+
+class Led {
+    public:
+    int ledPin;
+    int brightness;
+
+    Led(int pin) {
+    ledPin = pin;
+    pinMode(ledPin, OUTPUT);
+    }
+
+    void setBrightness(float distance) {
+    float val = distance / 15.0;
+    analogWrite(ledPin, val);
+    }
+};
+
+void setup() {
+    Serial.begin(9600);
+}
+
+Ultrasonic ultrasonic(9, 10, 1000);
+Led led(3);
+
+void loop() {
+    ultrasonic.sendSignal();
+    float distance = ultrasonic.measureSignal();
+    led.setBrightness(distance);  
+}
+                    </code></pre>
+
+                    <p style="text-align: left">
+                        Here is a video of the final result! It is a bit hard to tell in the video that the brightness of the
+                        LED is fluctuating, but it was more visible in person.
+                    </p>
+
+                    <div class="image-row">
+                        <figure>
+                            <img src="./ultrasonic_led_setup.jpeg" alt="final setup" width="250">
+                            <figcaption>Final Setup</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="./ultrasonic_led_schematic.jpeg" alt="final schematic" width="360">
+                            <figcaption>Final Circuit Schematic</figcaption>
+                        </figure>
+                        <video controls height="250">
+                            <source src="ultrasonic_led_vid.mp4" type="video/mp4">
+                        </video>
+                    </div>
+
+                    <p style="text-align: left">
+                        For the ultrasonic sensor, the relationship between the duration of the pulses recorded by the
+                        microcontroller and the physical distance between the sensor and the box appears to be approximately
+                        linear.
+                    </p>
+                    <figure>
+                        <img src="./ultrasonic_calibration.png" alt="calibration" width="800">
+                        <figcaption>Calibration Data for Ultrasonic Sensor</figcaption>
+                    </figure>
 			</li>
 
 		</ul>
