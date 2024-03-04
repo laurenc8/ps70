@@ -37,8 +37,148 @@
 
                 <p style="text-align: left">
                     The first assignment was to make a capacitive sensor to measure a physical quantity with your
-                    microcontroller.
+                    microcontroller. I decided to measure the water level in a container. I stuck two strips of copper tape to
+                    opposite sides of the container, forming the plates of my capacitor.
                 </p>
+
+                <div class="image-row">
+                    <figure>
+                        <img src="./capacitive_setup.jpeg" alt="setup" width="300">
+                        <figcaption>Setup</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="./capacitive_schematic.jpeg" alt="circuit schematic" width="600">
+                        <figcaption>Circuit Schematic</figcaption>
+                    </figure>
+                </div>
+                
+                <p style="text-align: left">
+                    The first iteration of my code came from the capacitive sensor we made during class that used 
+                    transmit-receive (tx-rx).
+                </p>
+
+                <pre style="text-align: left; height: 400px; overflow: scroll;"><code class="language-arduino">
+long result;   // Variable for the result of the tx_rx measurement.
+int analog_pin = A3;
+int tx_pin = 4;
+
+void setup() {
+    pinMode(tx_pin, OUTPUT);      // Pin 4 provides the voltage step
+    Serial.begin(9600);
+}
+
+void loop() {
+    result = tx_rx();
+    Serial.println(result);
+}
+
+
+long tx_rx(){         // Function to execute rx_tx algorithm and return a value
+                      // that depends on coupling of two electrodes.
+                      // Value returned is a long integer.
+    int read_high;
+    int read_low;
+    int diff;
+    long int sum;
+    int N_samples = 500;    // Number of samples to take.  Larger number slows it down, but reduces scatter.
+
+    sum = 0;
+
+    for (int i = 0; i < N_samples; i++){
+        digitalWrite(tx_pin,HIGH);              // Step the voltage high on conductor 1.
+        read_high = analogRead(analog_pin);     // Measure response of conductor 2.
+        delayMicroseconds(100);                 // Delay to reach steady state.
+        digitalWrite(tx_pin,LOW);               // Step the voltage to zero on conductor 1.
+        read_low = analogRead(analog_pin);      // Measure response of conductor 2.
+        diff = read_high - read_low;            // Desired answer is the difference between high and low.
+        sum += diff;                            // Sums up N_samples of these measurements.
+    }
+    
+    return sum / N_samples;
+}
+                </code></pre>
+
+                <p style="text-align: left">
+                    In the second iteration of my code, I replaced <code>delay</code> with <code>micros</code> and created
+                    a <code>Capacitive</code> class.
+                </p>
+
+                <pre style="text-align: left; height: 400px; overflow: scroll;"><code class="language-arduino">
+class Capacitive {
+    public:
+    int analog_pin;
+    int tx_pin;
+    long result = 0; // Variable for the result of the tx_rx measurement.
+    long int sum = 0;
+    int N_samples = 1000;    // Number of samples to take.  Larger number slows it down, but reduces scatter.
+    int N = 0;
+    int step = 0;
+    unsigned long startTime;
+    int read_high;
+    
+    Capacitive(int pin1, int pin2) {
+        analog_pin = pin1;
+        tx_pin = pin2;
+        pinMode(tx_pin, OUTPUT);      // Pin 4 provides the voltage step
+    }
+    
+    long tx_rx(){        // Function to execute rx_tx algorithm and return a value
+                        // that depends on coupling of two electrodes.
+                        // Value returned is a long integer.
+        if (N < N_samples) {
+            if (step == 0) {
+                startTime = micros();
+                digitalWrite(tx_pin,HIGH);              // Step the voltage high on conductor 1.
+                read_high = analogRead(analog_pin);     // Measure response of conductor 2.
+                step = 1;
+            }
+            else if ((step == 1) && (micros() - startTime > 100)) {
+                digitalWrite(tx_pin,LOW);               // Step the voltage to zero on conductor 1.
+                int read_low = analogRead(analog_pin);  // Measure response of conductor 2.
+                int diff = read_high - read_low;        // Desired answer is the difference between high and low.
+                sum += diff;                            // Sums up N_samples of these measurements.
+                N++;
+                step = 0;
+            }
+        }
+        else if (N == N_samples) {
+            result = sum / N_samples;
+            N = 0;
+            sum = 0;
+        }
+        return result;
+    }
+};
+
+Capacitive capacitive(A3, 4);
+
+void setup() {
+    Serial.begin(9600);
+}
+
+void loop() {
+    Serial.println(capacitive.tx_rx());
+}
+                </code></pre>
+
+                <p style="text-align: left">
+                    The numbers in the serial monitor fluctuated quite a bit at times, even after taking the average of 1000
+                    samples for each data point, so I roughly found the midpoint of the range of numbers I saw for each water
+                    level. Sometimes, the number would jump to 1020-1023, which I thought were erroneous measurements--maybe 
+                    the voltage difference was too high--since that is the upper bound of the possible values of
+                    <code>analogRead</code>. In addition, the numbers were sensitive to when I touched any part of the setup,
+                    when the wires accidentally touched the container, etc.
+                </p>
+
+                <p style="text-align: left">
+                    Despite these obstacles to robust measurements, I still got a reasonable increasing relationship between
+                    the height of the water and the difference in voltage. This makes sense because the permittivity of water (80)
+                     is higher than the permittivity of air (~1).
+                </p>
+                <figure>
+                    <img src="./capacitive_calibration.png" alt="calibration" width="800">
+                    <figcaption>Calibration Data for Capacitive Sensor</figcaption>
+                </figure>
 
                 <h3>
                     Another Sensor
@@ -305,7 +445,10 @@ void loop() {
 
                     <p style="text-align: left">
                         Here is a video of the final result! It is a bit hard to tell in the video that the brightness of the
-                        LED is fluctuating, but it was more visible in person.
+                        LED is fluctuating, but it was more visible in person. Overall, I was pleasantly surprised by how
+                        consistent and reliable the measurements were. The numbers in the serial monitor didn't really fluctuate
+                        when the box was still and were not affected by nearby objects (unless they were in the field of view,
+                        of course), unlike the capacitive sensor.
                     </p>
 
                     <div class="image-row">
