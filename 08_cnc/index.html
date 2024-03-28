@@ -9,7 +9,7 @@
     <iframe src="../head.html"  style="border: none;" width="100%" height="180px;" scrolling="no" ></iframe>
 </div>
 
-<h1  style="text-align: center">Week 8</h1>
+<h1  style="text-align: center">CNC Milling</h1>
 
 <br>
 <br>
@@ -22,6 +22,116 @@
 		<ul class="small-block-grid-1 medium-block-grid-1 large-block-grid-1 inline-list-custom">
 
 			<li>
+                <h3>
+                    CNC
+                </h3>
+
+                <p style="text-align: left">
+                    The first assignment was to design something and make it using CNC. I decided to cut out my friend's
+                    drawing of a bear in a lab coat. I first used Inkscape to trace the bitmap and convert it into a DXF
+                    file. Then I took it to the Aspire software to print it out on the Shopbot. I realized that the
+                    design was much too detailed to be captured even by the smallest end mill, so I had to remove a lot of tiny
+                    details manually and then create all the pocket and profile toolpaths (inner ones were 2mm deep). This part
+                    took quite a long time! I finally nailed down a 6mm piece of wood to the sacrificial layer, zeroed it (using
+                    the paper test for the Z coordinate), switched to the 1/32 inch end mill, and did an air cut to test it out
+                    before the real cut. It turned out pretty well overall--just one pocket toopath that I forgot to set to 2mm
+                    went all the way through. :") The last step was to sand it down.
+                </p>
+
+                <div class="image-row">
+                    <figure>
+                        <img src="./original_design.png" alt="original design" width="300">
+                        <figcaption>Original Design</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="./pre_sanding.jpeg" alt="pre-sanding" width="360">
+                        <figcaption>Fresh Out of the Shopbot (Pre-Sanding)</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="./post_sanding.jpeg" alt="post-sanding" width="360">
+                        <figcaption>Post-Sanding</figcaption>
+                    </figure>
+                </div>
+
+                <h3>
+                    Post-Processing
+                </h3>
+
+                <p style="text-align: left">
+                    The second assignment was to post-process a design using fabrication processes such as molding and casting,
+                    vacuum forming, or composites. I thought it would have been difficult to post-process the bear design
+                    because there were so many tiny holes and details, so I decided to start afresh. Inspired by my recent trip
+                    to Switzerland, I decided to make some chocolates of the Matterhorn, the famous mountain in
+                    Zermatt, Switzerland on the Toblerone chocolate packaging.
+                </p>
+
+                <p style="text-align: left">
+                    I first took an image from the internet, traced the bitmap in Inkscape, and imported it into Fusion 360 to
+                    extrude the 2.5D model. I exported it as a STL file and moved over to the Roland software for the SRM-20 machine.
+                    After scaling the model to the right size, setting the right parameters, taping down the wax block, and zeroing
+                    the 1/16 inch end mill, I created the tool path and let it cut!
+                </p>
+
+                <div class="image-row">
+                    <figure>
+                        <img src="./mountain_fusion.png" alt="fusion 360" width="400">
+                        <figcaption>Model in Fusion 360</figcaption>
+                    </figure>
+
+                    <figure>
+                        <img src="./wax.jpeg" alt="wax block" width="400">
+                        <figcaption>Wax Block Fresh Out of the SRM-20</figcaption>
+                    </figure>
+                </div>
+
+                <p style="text-align: left">
+                    It turned out okay though the design was too small to get all the cavities and sharp corners inside the mountain. Unfortunately
+                    I had to keep it pretty small because we had ran out of new wax at this point in the week, so I only had a few
+                    smaller parts of old wax blocks to work with. I think this would have been better with a 1/32 inch end mill
+                    and a larger piece of stock material.
+                </p>
+
+                <p style="text-align: left">
+                    The next step was creating the silicone mold. I measured the parts by volume, mixed them together, and
+                    poured it into the wax block. Several hours later, the silicone had set, so I cut it out with a sharp knife.
+                    I realized the surface was quite thin; next time I will change the bounding box so that the model is deeper
+                    into the wax block. Luckily it did not crack, so I melted some chocolate and poured it in!
+                </p>
+
+                <div class="image-row">
+                    <figure>
+                        <img src="./silicone.jpeg" alt="silicone" width="300">
+                        <figcaption>Silicone Inside Wax Block</figcaption>
+                    </figure>
+
+                    <figure>
+                        <img src="./mold.jpeg" alt="silicone mold" width="370">
+                        <figcaption>Silicone Mold</figcaption>
+                    </figure>
+
+                    <figure>
+                        <img src="./chocolate_in_mold.jpeg" alt="chocolate in mold" width="340">
+                        <figcaption>Chocolate in Mold</figcaption>
+                    </figure>
+                </div>
+
+                <p style="text-align: left">
+                    Once the chocolate had set (this took a while because I didn't temper the chocolate oops),
+                    I removed it from the mold. I accidentally poured a bit too much chocolate and didn't level
+                    it before letting it set, so I trimmed the overflowed edges afterwards. Here's the finished product!
+                </p>
+
+                <div class="image-row">
+                    <figure>
+                        <img src="./choco1.jpeg" alt="before trimming" width="400">
+                        <figcaption>Chocolate Straight Out of Mold</figcaption>
+                    </figure>
+
+                    <figure>
+                        <img src="./choco2.jpeg" alt="after trimming" width="400">
+                        <figcaption>Chocolate After Trimming</figcaption>
+                    </figure>
+                </div>
 			</li>
 
 		</ul>
