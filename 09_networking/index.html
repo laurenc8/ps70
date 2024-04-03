@@ -26,6 +26,33 @@
 		<ul class="small-block-grid-1 medium-block-grid-1 large-block-grid-1 inline-list-custom">
 
 			<li>
+
+                <p style="text-align: left">
+                    This week we learned about wireless networking and wired communication, which required learning to use a ESP32 device.
+                </p>
+
+                <h3>
+                    GIFs
+                </h3>
+
+                <p style="text-align: left">
+                    The assignment this week was to program a microcontroller to obtain and respond to information from the
+                    internet or radio, including at least one input and one output. Aurora and I decided to program the ESP32 XIAO
+                    to connect to a Firebase database and write values from an ultrasonic sensor to the database, and then code a
+                    web interface to read values from the database and move through a GIF as the object moved farther away.
+                </p>
+
+                <p style="text-align: left">
+                    We started with <a href="https://randomnerdtutorials.com/esp32-firebase-realtime-database/">this tutorial</a> to set up our Firebase database and connect our ESP32 XIAO to the database. The only hiccup was getting the ESP32 XIAO to connect to Wifi, which Bobby helped us fix by attaching the antenna to it!
+                </p>
+
+                <p style="text-align: left">
+                    The next step was the hardest: getting the ESP32 XIAO to work with the ultrasonic sensor. We started with my code from <a href="../06_input/index.html">Week 6</a>, which worked on the Arduino Uno. However, when we used the same code on the ESP32 XIAO, it kept giving 0’s! To debug, Nathan suggested we use the oscilloscope, so we commented stuff out of the code until the oscilloscope was showing a square wave signal from the trigger pin. However, we were stuck as to how to get our <code>measureSignal</code> function to actually detect the signal that was getting sent; it was like a qubit that collapsed when you tried to measure it. D:
+                </p>
+
+                <p style="text-align: left">
+                    So, we went back to a simpler version of the code that used <code>delay</code> and did not have a class structure. After lots of fiddling around, we realized that moving the echo pin to D2 while keeping the trigger pin at D9 allowed us to get a nonzero signal from the sensor using this simpler version of the code. After fixing this, we compared the code to our original code again and realized that we were waiting too long before calling <code>pulseIn</code> on the echo pin, and we should instead call it right away after the signal is sent on the trigger pin. After making both changes, we were able to detect the ultrasonic sensor signal!
+                </p>
                     
                 <pre style="text-align: left; height: 400px; overflow: scroll;"><code class="language-arduino">
 #include &lt;Arduino.h&gt;
@@ -150,6 +177,88 @@ void loop(){
     }
 }
                 </code></pre>
+
+                <p style="text-align: left">
+                    We wanted to make a webpage that would display different frames of a gif depending on the readings of the ultrasonic sensor. We picked out two different gifs of milk and mocha bears and took screenshots of each of the frames (one of them has three frames and the other has four). Once we got past all of the sensor ~issues~ we started on the webpage, using the firebase web interface html code from the PS70 website as a starting point. We kept most of the basic configuration code to connect to the firebase page, but deleted the buttons and button functions that were from the PS70 code and replaced them with image displays to make our gif page. The frames for each gif are put into an array and each element of the array is displayed based on intervals (0-500, 500-900, 900-1300, and 1300+) for the duration variable read from the firebase page. See our code below and <a href="./firebase.html">this page</a> for our GIFs (which do not move at the moment because our sensor is not connected). Lauren is super speedy and a CS genius so this part of the project didn’t take too long yay :D (obviously I, Aurora, wrote this sentence because Lauren is also very humble and would probably not call herself a speedy CS genius) The webpage turned out cuteeeeee (in my opinion), but lags sometimes because the firebase page will randomly stop receiving values every once in a while with the error from <code>fbdo.errorReason()</code> being <code>response payload read timed out</code> (which means that the webpage cannot read new values from the firebase page, so no new values are being read/written anywhere so no new frame of gif is being shown). 
+                </p>
+
+<pre style="text-align: left; height: 400px; overflow: scroll;"><code class="language-html">
+&lt!doctype html&gt
+&lthtml class="no-js" lang="en"&gt
+&lthead&gt
+    &ltmeta charset="utf-8" /&gt
+    &ltmeta name="viewport" content="width=device-width, initial-scale=1.0" /&gt
+    &lttitle&gtPHYSCI 70: Introduction to Digital Fabrication&lt/title&gt
+&lt/head&gt
+
+&ltbody&gt
+
+    &ltfigure&gt
+        &ltimg id="gif1" src="./hug1.jpg" alt="hug1" width="400"&gt
+    &lt/figure&gt
+    &ltfigure&gt
+        &ltimg id="gif2" src="./love1.png" alt="love1" width="400"&gt
+    &lt/figure&gt
+
+    &lt!-- The core Firebase JS SDK is always required and must be listed first --&gt
+    &ltscript src="https://www.gstatic.com/firebasejs/7.13.2/firebase-app.js"&gt&lt/script&gt
+
+    &lt!-- TODO: Add SDKs for Firebase products that you want to use
+            https://firebase.google.com/docs/web/setup#available-libraries --&gt
+    &ltscript src="https://www.gstatic.com/firebasejs/7.13.2/firebase-database.js"&gt&lt/script&gt
+
+    &ltscript&gt
+        
+    var img1_array = ['./hug1.jpg', './hug2.jpg', './hug3.jpg'];
+    var img2_array = ['./love1.png', './love2.png', './love3.png', './love4.png'];
+    function changeImg(duration) {
+        if (duration &lt= 500) {
+            document.getElementById("gif1").src = img1_array[0];
+            document.getElementById("gif2").src = img2_array[0];
+        } else if (duration &lt= 900) {
+            document.getElementById("gif1").src = img1_array[1];
+            document.getElementById("gif2").src = img2_array[1];
+        } else if (duration &lt= 1300) {
+            document.getElementById("gif1").src = img1_array[2];
+            document.getElementById("gif2").src = img2_array[2];
+        } else {
+            document.getElementById("gif1").src = img1_array[2];
+            document.getElementById("gif2").src = img2_array[3];
+        }
+    }
+
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+        apiKey: "AIzaSyANVWLb3l_BJL9bgHcHYrW4cr0Jkef9pA8",
+        authDomain: "REPLACE_WITH_YOUR_OWN",
+        databaseURL: "https://ps-70-10b27-default-rtdb.firebaseio.com",
+        projectId: "REPLACE_WITH_YOUR_OWN",
+        storageBucket: "REPLACE_WITH_YOUR_OWN",
+        messagingSenderId: "REPLACE_WITH_YOUR_OWN",
+        appId: "REPLACE_WITH_YOUR_OWN"
+    };
+        // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // Get a database reference to our blog
+    var ref = firebase.database().ref("/");
+
+    setInterval(function() {
+        ref.on("value", function(snapshot) {
+            changeImg(snapshot.val().ultrasonic);
+        }, function (error) {
+            console.log("Error: " + error.code);
+        });
+    }, 100);
+
+&lt/script&gt
+
+&lt/body&gt
+</code></pre>
+
+                <video controls width="600">
+                    <source src="final.MOV" type="video/mp4">
+                </video>
 			</li>
 
 		</ul>
