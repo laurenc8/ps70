@@ -8,8 +8,12 @@
 
 <body>
 
-     <button id="turn-on" name="turnon">Turn On</button>
-     <button id="turn-off" name="turnoff">Turn Off</button>
+    <figure>
+        <img id="gif1" src="./hug1.jpg" alt="hug1" width="400">
+    </figure>
+    <figure>
+        <img id="gif2" src="./love1.png" alt="love1" width="400">
+    </figure>
 
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.13.2/firebase-app.js"></script>
@@ -19,6 +23,25 @@
     <script src="https://www.gstatic.com/firebasejs/7.13.2/firebase-database.js"></script>
 
     <script>
+        
+    var img1_array = ['./hug1.jpg', './hug2.jpg', './hug3.jpg'];
+    var img2_array = ['./love1.png', './love2.png', './love3.png', './love4.png'];
+    function changeImg(duration) {
+        if (duration <= 500) {
+            document.getElementById("gif1").src = img1_array[0];
+            document.getElementById("gif2").src = img2_array[0];
+        } else if (duration <= 900) {
+            document.getElementById("gif1").src = img1_array[1];
+            document.getElementById("gif2").src = img2_array[1];
+        } else if (duration <= 1300) {
+            document.getElementById("gif1").src = img1_array[2];
+            document.getElementById("gif2").src = img2_array[2];
+        } else {
+            document.getElementById("gif1").src = img1_array[2];
+            document.getElementById("gif2").src = img2_array[3];
+        }
+    }
+
     // Your web app's Firebase configuration
     var firebaseConfig = {
         apiKey: "AIzaSyANVWLb3l_BJL9bgHcHYrW4cr0Jkef9pA8",
@@ -35,25 +58,14 @@
     // Get a database reference to our blog
     var ref = firebase.database().ref("/");
 
-    // make the buttons call the function below 
-    document.getElementById('turn-on').addEventListener('click', turnOn, false);
-    document.getElementById('turn-off').addEventListener('click', turnOff, false);
-
-    function turnOn(){
-        console.log("turning on");
+    setInterval(function() {
         ref.on("value", function(snapshot) {
-            console.log(snapshot.val());
+            changeImg(snapshot.val().ultrasonic);
         }, function (error) {
             console.log("Error: " + error.code);
         });
-    }
+    }, 100);
 
-    function turnOff(){
-        console.log("turning off");
-        ref.update({
-            "LED_STATUS": "OFF"
-        });
-    }    
 </script>
 
 </body>
