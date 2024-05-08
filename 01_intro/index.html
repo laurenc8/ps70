@@ -127,17 +127,143 @@
 <br>
 
 <div class="row">
-	<div class="small-1 medium-1 large-1 small-centered columns">
-		<ul class="small-block-grid-1 medium-block-grid-1 large-block-grid-1 inline-list-custom">
+    <div class="small-1 medium-1 large-1 small-centered columns">
+        <ul class="small-block-grid-1 medium-block-grid-1 large-block-grid-1 inline-list-custom">
 
-			<li>
+            <li>
                 <p style="text-align: left">
                     See <a href="../07_output/index.html">this page</a> for documentation of the MVP.
                 </p>
-</li>
+            </li>
 
-</ul>
+        </ul>
+    </div>
 </div>
+
+<h1  style="text-align: center">Week 14: Final Project Documentation</h1>
+
+<br>
+<br>
+<br>
+<br>
+<br>
+
+<div class="row">
+    <div class="small-1 medium-1 large-1 small-centered columns">
+        <ul class="small-block-grid-1 medium-block-grid-1 large-block-grid-1 inline-list-custom">
+
+            <li>
+                <h3>
+                    Replacing the Hardware Components
+                </h3>
+
+                <p style="text-align: left">
+                    After making the MVP, the first major issue I noticed was that the motors were not powerful enough to move the
+                    robot, so I switched to a more powerful DC motor. The hole in the smaller wheels only fit the old motors, so I
+                    also had to replace them with larger wheels. To connect the motor and the wheel, I had to 3D print a small piece that
+                    would pressfit in the motor shaft on one side and the hole in the wheel on the other side since the shapes were no
+                    longer a precise match. Getting the dimensions right took many many tries... This piece would also break occasionally
+                    if there was too much pressure applied to it when trying to push in the pressfit, so I also increased the infill
+                    from 15% to 30% to make it stronger.
+                </p>
+
+                <div class="image-row">
+                    <figure>
+                        <img src="./pressfit_tries.png" alt="pressfit" width="500">
+                        <figcaption>(Three of Many) Pressfit Tries</figcaption>
+                    </figure>
+                </div>
+
+                <p style="text-align: left">
+                    I added a caster wheel in the front that was mainly to help micromouse balance, like a tricycle. Otherwise, the base would
+                    often tip forwards or backwards. I also 3D printed a connector piece to replace the cardboard one in the MVP and recut the
+                    base out of wood instead of cardboard to be more sturdy.
+                </p>
+
+                <div class="image-row">
+                    <figure>
+                        <img src="./mouse_v1.png" alt="mouse v1 top" width="500">
+                        <figcaption>Micromouse v1 (Top)</figcaption>
+                    </figure>
+
+                    <figure>
+                        <img src="./mouse_v1_bottom.png" alt="mouse v1 bottom" width="500">
+                        <figcaption>Micromouse v1 (Bottom)</figcaption>
+                    </figure>
+                </div>
+
+                <p style="text-align: left">
+                    The second issue was that the motor itself would rotate sometimes, rather than just the motor shaft rotating.
+                    I first noticed this when the wires kept getting twisted around the motor. To fix this, I added 2 holes in the
+                    connector piece for M2.5 screws to hold the motor in place. This also took a few tries to get the position right, but
+                    it was very successful in fixing the issue!
+                </p>
+
+                <p style="text-align: left">
+                    I noticed that the motors were dipping because there was nothing supporting them. Although they were not touching
+                    the ground, this tilted the wheels at a slight angle so that they were no longer perfectly perpendicular to the ground, which
+                    wasn't causing big problems but also wasn't ideal. I decided to reprint the connector piece with a third side that would lay
+                    under the motor to help support it. Unfortunately, I made the height a little too tall, but it does prevent it from dipping too
+                    drastically.
+                </p>
+
+                <p style="text-align: left">
+                    For the final assembly, I stuck the breadboard to the base with some tape, screwed the L9110's into the holes on the
+                    side so that they were no longer floating, and clipped the wires to the right size / used zipties to reduce clutter.
+                </p>
+
+                <h3>
+                    Sensing and Software
+                </h3>
+
+                <p style="text-align: left">
+                    Finally, it was time to code! After lots of debugging, we had gotten the ultrasonic sensor to work with the
+                    ESP32 Xiao (see <a href="../09_networking/index.html">Week 9</a>). Part of the issue was finding the right pair of
+                    pins to use for Trig and Echo; for some reason, D9 and D2 worked but all the other pairs we tried did not. I tried
+                    to find two more pairs of pins for the side ultrasonic sensors on our micromouse, but to no avail. So, I decided to
+                    stick with just a front sensor and utilize turning to explore the maze.
+                </p>
+
+                <div class="image-row">
+                    <figure>
+                        <img src="./pin_layout.png" alt="pin layout" width="400">
+                        <figcaption>ESP32 Xiao Pin Layout</figcaption>
+                    </figure>
+                </div>
+
+                <p style="text-align: left">
+                    When first testing the motors, I occasionally encountered a bug where the serial monitor would rapidly disconnect and reconnect.
+                    After searching Google and talking to Bobby, we concluded that this was happening because the USB power supply from my computer was not sufficient for
+                    the motors, and one possible solution was using a LiPo battery instead. However, the issue eventually stopped occurring
+                    so I continued using the USB power supply for now.
+                </p>
+
+                <p style="text-align: left">
+                    At this point, micromouse was able to go straight until it sensed a wall, and then stop. The next major step
+                    was a 90 degree turn. To turn left, I stopped the left wheel and only turned the right wheel. I first tried
+                    to use a counter in the <code>loop</code> function to measure how much it had turned, but I quickly realized
+                    that the time for each loop iteration was not constant and fluctuated quite a bit. I instead used <code>millis</code>
+                    to time how long a 90 degree turn would take. This was better, but also proved to be a little irregular.
+                </p>
+
+                <h3>
+                    Next Steps
+                </h3>
+
+                <!-- <p style="text-align: left">
+                    Easy next steps include:
+                    <p style="text-align: left; margin-left: 40px">
+                        Reprinting the connector pieces with a slightly shorter height so that it supports the motors better.
+                     </p>
+ 
+                     <p style="text-align: left; margin-left: 40px">
+                        Replace the USB power supply with a LiPo battery.
+                      </p>
+                </p> -->
+            </li>
+            
+        </ul>
+    </div>
 </div>
 
 
