@@ -4,6 +4,10 @@
 <title>PS70: Intro to Digital Fabrication </title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="../style.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/arduino-light.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/arduino.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script> 
 
 <div id="header">
     <iframe src="../head.html"  style="border: none;" width="100%" height="180px;" scrolling="no" ></iframe>
@@ -168,7 +172,7 @@
                 </p>
 
                 <div class="image-row">
-                    <figure>
+                    <figure style="display: block; margin-left: auto; margin-right: auto;">
                         <img src="./pressfit_tries.png" alt="pressfit" width="500">
                         <figcaption>(Three of Many) Pressfit Tries</figcaption>
                     </figure>
@@ -196,8 +200,21 @@
                     The second issue was that the motor itself would rotate sometimes, rather than just the motor shaft rotating.
                     I first noticed this when the wires kept getting twisted around the motor. To fix this, I added 2 holes in the
                     connector piece for M2.5 screws to hold the motor in place. This also took a few tries to get the position right, but
-                    it was very successful in fixing the issue!
+                    it was very successful in fixing the issue! (The screws stick out in the picture because we ran out of
+                    shorter M2.5 screws.)
                 </p>
+
+                <div class="image-row">
+                    <figure>
+                        <img src="./connector.png" alt="connector" width="385">
+                        <figcaption>New Connector Piece with Holes for Screws</figcaption>
+                    </figure>
+
+                    <figure>
+                        <img src="./screw.png" alt="screwe" width="400">
+                        <figcaption>New Connector Piece in Micromouse</figcaption>
+                    </figure>
+                </div>
 
                 <p style="text-align: left">
                     I noticed that the motors were dipping because there was nothing supporting them. Although they were not touching
@@ -207,10 +224,24 @@
                     drastically.
                 </p>
 
+                <div class="image-row">
+                    <figure style="display: block; margin-left: auto; margin-right: auto;">
+                        <img src="./dip.png" alt="dip" width="450">
+                        <figcaption>Motors Dipping but New Connector Piece on Left</figcaption>
+                    </figure>
+                </div>
+
                 <p style="text-align: left">
                     For the final assembly, I stuck the breadboard to the base with some tape, screwed the L9110's into the holes on the
                     side so that they were no longer floating, and clipped the wires to the right size / used zipties to reduce clutter.
                 </p>
+
+                <div class="image-row">
+                    <figure style="display: block; margin-left: auto; margin-right: auto;">
+                        <img src="./final.png" alt="final" width="450">
+                        <figcaption>Final Assembly</figcaption>
+                    </figure>
+                </div>
 
                 <h3>
                     Sensing and Software
@@ -225,7 +256,7 @@
                 </p>
 
                 <div class="image-row">
-                    <figure>
+                    <figure style="display: block; margin-left: auto; margin-right: auto;">
                         <img src="./pin_layout.png" alt="pin layout" width="400">
                         <figcaption>ESP32 Xiao Pin Layout</figcaption>
                     </figure>
@@ -234,20 +265,273 @@
                 <p style="text-align: left">
                     When first testing the motors, I occasionally encountered a bug where the serial monitor would rapidly disconnect and reconnect.
                     After searching Google and talking to Bobby, we concluded that this was happening because the USB power supply from my computer was not sufficient for
-                    the motors, and one possible solution was using a LiPo battery instead. However, the issue eventually stopped occurring
-                    so I continued using the USB power supply for now.
+                    the motors, and one possible solution was using a LiPo battery instead. At the same time, I noticed a seemingly unrelated issue: the L9110
+                    driver was getting really warm, and occasionally the motor wouldn't turn until I gave it a little push. I think it was because I had
+                    set the motor speed too low for it to turn; the motor stalling seemed to burn through a lot of current. When I increased the motor speed, both issues stopped occurring: the serial monitor
+                    stayed connected and the L9110 driver was no longer getting so hot, so I decided to continue using the USB power supply for now.
                 </p>
 
                 <p style="text-align: left">
                     At this point, micromouse was able to go straight until it sensed a wall, and then stop. The next major step
                     was a 90 degree turn. To turn left, I stopped the left wheel and only turned the right wheel. I first tried
                     to use a counter in the <code>loop</code> function to measure how much it had turned, but I quickly realized
-                    that the time for each loop iteration was not constant and fluctuated quite a bit. I instead used <code>millis</code>
-                    to time how long a 90 degree turn would take. This was better, but also proved to be a little irregular.
+                    that the time for each loop iteration was not constant and fluctuated quite a bit. As a result, the same number of iterations
+                    would result sometimes in 30 degree turns and sometimes in 150 degree turns. I next tried to use <code>millis</code>
+                    to time how long a 90 degree turn would take. This was better, but also proved to be a little irregular. I think the best
+                    solution is to use a stepper motor in the future, since that gives precise control over how much the motor rotates. The final code
+                    I used is below.
                 </p>
 
+<pre style="text-align: left; height: 400px; overflow: scroll;"><code class="language-arduino">
+class Ultrasonic {
+    public:
+    int trigPin;
+    int echoPin;
+    int signalInterval;
+    unsigned long signalStartTime = 0;
+    int measured = 3;
+    long duration;
+
+    Ultrasonic(int pin1, int pin2, int interval) {
+        trigPin = pin1;
+        echoPin = pin2;
+        signalInterval = interval; // in microseconds
+        pinMode(trigPin, OUTPUT);
+        pinMode(echoPin, INPUT);
+    }
+
+    void sendSignal() {
+        if ((micros() - signalStartTime > signalInterval) && (measured == 3)) {
+            signalStartTime = micros();
+            digitalWrite(trigPin, LOW); // Set the Trigger pin LOW to start a pulse
+            measured = 2;
+        }
+        else if ((micros() - signalStartTime > 2) && (measured == 2)) {
+            digitalWrite(trigPin, HIGH); // Set the Trigger pin HIGH
+            measured = 1;
+        }
+        else if ((micros() - signalStartTime > 12) && (measured == 1)) {
+            digitalWrite(trigPin, LOW); // Set the Trigger pin LOW again to complete the pulse
+            measured = 0; // Signal is done so ready to measure
+        }
+    }
+
+    void measureSignal() {
+        if (measured == 0) {
+            duration = pulseIn(echoPin, HIGH); // Listen for a pulse on the Echo pin
+            Serial.print("Duration: ");
+            Serial.println(duration);
+            measured = 3;
+        }
+    }
+};
+
+int turningLeft = 0;
+int turnedLeft = 0;
+unsigned long startTime = 0;
+
+class Motor {
+    public:
+    int dirPin;
+    int speedPin;
+
+    Motor(int pin1, int pin2) {
+        dirPin = pin1;
+        speedPin = pin2;
+        pinMode(dirPin, OUTPUT);
+        pinMode(speedPin, OUTPUT);
+    }
+
+    void setSpeed(float duration) {
+        if (duration > 1500) {
+            analogWrite(speedPin, 150);
+            turnedLeft = 0;
+        } else {
+            analogWrite(speedPin, 0);
+            turningLeft = 1;
+            startTime = millis();
+        }
+    }
+};
+
+Ultrasonic ultrasonic(D9, D2, 10000);
+Motor leftMotor(D7, D5);
+Motor rightMotor(D6, D8);
+
+void goStraight(float duration) {
+    leftMotor.setSpeed(duration);
+    rightMotor.setSpeed(duration);
+}
+
+void turnLeft() {
+    analogWrite(leftMotor.speedPin, 0);
+    analogWrite(rightMotor.speedPin, 150);
+}
+
+void setup() {
+    Serial.begin(115200);
+}
+
+void loop() {
+    ultrasonic.sendSignal();
+    ultrasonic.measureSignal();
+
+    if (turningLeft == 0) {
+        goStraight(ultrasonic.duration);
+    } else if (turningLeft == 1 && millis() - startTime < 400) {
+        turnLeft();
+    } else if (turningLeft == 1 && millis() - startTime >= 400) {
+        turnedLeft = 1;
+        turningLeft = 0;
+    }
+}
+                </code></pre>
+
+                <p style="text-align: left">
+                    This is a video of micromouse's best attempt to turn using the above code despite it being inconsistent most of the time:
+                </p>
+
+                <video controls height="600">
+                    <source src="turn.mp4" type="video/mp4">
+                </video>
+
+                <p style="text-align: left">
+                    Another thing I tried but didn't work out: branching logic for the maze. Once it senses a wall, first turn 90 degrees left.
+                    If there is no wall to the left, go straight and keep exploring. If there is a wall, turn 180 degrees to go in the opposite direction if possible.
+                    Although I implemented the logic, it was not very reliable because of the above issue with the timing. For example, sometimes it would try to
+                    turn 90 degrees, but it hadn't turned enough and still sensed the original wall, so it would try to turn 180 degrees, even
+                    though there was no wall to the left. The code for the logic is below. It uses four booleans <code>turningLeft</code>,
+                    <code>turnedLeft</code>, <code>turning180</code>, and <code>turned180</code> to record the state at any given point in time.
+                </p>
+
+                <pre style="text-align: left; height: 400px; overflow: scroll;"><code class="language-arduino">
+class Ultrasonic {
+    public:
+    int trigPin;
+    int echoPin;
+    int signalInterval;
+    unsigned long signalStartTime = 0;
+    int measured = 3;
+    long duration;
+
+    Ultrasonic(int pin1, int pin2, int interval) {
+        trigPin = pin1;
+        echoPin = pin2;
+        signalInterval = interval; // in microseconds
+        pinMode(trigPin, OUTPUT);
+        pinMode(echoPin, INPUT);
+    }
+
+    void sendSignal() {
+        if ((micros() - signalStartTime > signalInterval) && (measured == 3)) {
+            signalStartTime = micros();
+            digitalWrite(trigPin, LOW); // Set the Trigger pin LOW to start a pulse
+            measured = 2;
+        }
+        else if ((micros() - signalStartTime > 2) && (measured == 2)) {
+            digitalWrite(trigPin, HIGH); // Set the Trigger pin HIGH
+            measured = 1;
+        }
+        else if ((micros() - signalStartTime > 12) && (measured == 1)) {
+            digitalWrite(trigPin, LOW); // Set the Trigger pin LOW again to complete the pulse
+            measured = 0; // Signal is done so ready to measure
+        }
+    }
+
+    void measureSignal() {
+        if (measured == 0) {
+            duration = pulseIn(echoPin, HIGH); // Listen for a pulse on the Echo pin
+            Serial.print("Duration: ");
+            Serial.println(duration);
+            measured = 3;
+        }
+    }
+};
+
+int turningLeft = 0;
+int turnedLeft = 0;
+int turning180 = 0;
+int turned180 = 0;
+unsigned long startTime = 0;
+
+class Motor {
+    public:
+    int dirPin;
+    int speedPin;
+
+    Motor(int pin1, int pin2) {
+        dirPin = pin1;
+        speedPin = pin2;
+        pinMode(dirPin, OUTPUT);
+        pinMode(speedPin, OUTPUT);
+    }
+
+    void setSpeed(float duration) {
+        if (duration > 1500) {
+            analogWrite(speedPin, 150);
+            turnedLeft = 0;
+            turned180 = 0;
+        } else if (turnedLeft == 0) {
+            turningLeft = 1;
+            startTime = millis();
+        } else {
+            turning180 = 1;
+            startTime = millis();
+        }
+    }
+};
+
+Ultrasonic ultrasonic(D9, D2, 10000);
+Motor leftMotor(D7, D5);
+Motor rightMotor(D6, D8);
+
+void goStraight(float duration) {
+    leftMotor.setSpeed(duration);
+    rightMotor.setSpeed(duration);
+}
+
+void turnLeft() {
+    analogWrite(leftMotor.speedPin, 0);
+    analogWrite(rightMotor.speedPin, 150);
+}
+
+void setup() {
+    Serial.begin(115200);
+}
+
+void loop() {
+    ultrasonic.sendSignal();
+    ultrasonic.measureSignal();
+
+    if (turningLeft == 0 && turning180 == 0) {
+        goStraight(ultrasonic.duration);
+    } else if (turning180 == 1 && millis() - startTime < 1000) {
+        turnLeft();
+    } else if (turning180 == 1 && millis() - startTime >= 1000) {
+        turned180 = 1;
+        turning180 = 0;
+    } else if (turningLeft == 1 && millis() - startTime < 400) {
+        turnLeft();
+    } else if (turningLeft == 1 && millis() - startTime >= 400) {
+        turnedLeft = 1;
+        turningLeft = 0;
+    }
+}
+                </code></pre>
+
+                <p style="text-align: left">
+                    Since controlling the rotation angle using time was not going to work, I tried a different strategy: turning until the sensor
+                    read a large enough value. Unfortunately, the sensor does not seem to be great at measuring distance when the wall
+                    is at a diagonal, so it usually did not sense anything at all after micromouse had only turned 30-45 degrees and thus would
+                    try going straight. Here is a video of that behavior:
+                </p>
+
+                <video controls height="600">
+                    <source src="turn2.mp4" type="video/mp4">
+                </video>
+
                 <h3>
-                    Next Steps
+                    Conclusions and Next Steps
                 </h3>
 
                 <!-- <p style="text-align: left">
