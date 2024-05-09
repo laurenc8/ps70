@@ -220,8 +220,7 @@
                     I noticed that the motors were dipping because there was nothing supporting them. Although they were not touching
                     the ground, this tilted the wheels at a slight angle so that they were no longer perfectly perpendicular to the ground, which
                     wasn't causing big problems but also wasn't ideal. I decided to reprint the connector piece with a third side that would lay
-                    under the motor to help support it. Unfortunately, I made the height a little too tall, but it does prevent it from dipping too
-                    drastically.
+                    under the motor to help support it. We can see that it does prevent it from dipping too drastically!
                 </p>
 
                 <div class="image-row">
@@ -242,6 +241,26 @@
                         <figcaption>Final Assembly</figcaption>
                     </figure>
                 </div>
+
+                <button class="button">
+                    <a download href='./base final.f3d'>Download the base Fusion file</a>
+                </button>
+
+                <button class="button">
+                    <a download href='./pressfit final.stl'>Download the pressfit STL file</a>
+                </button>
+
+                <button class="button">
+                    <a download href='./pressfit final.gcode'>Download the pressfit gcode file</a>
+                </button>
+
+                <button class="button">
+                    <a download href='./connector final.stl'>Download the connector STL file</a>
+                </button>
+
+                <button class="button">
+                    <a download href='./connector final.gcode'>Download the connector gcode file</a>
+                </button>
 
                 <h3>
                     Sensing and Software
@@ -278,8 +297,8 @@
                     that the time for each loop iteration was not constant and fluctuated quite a bit. As a result, the same number of iterations
                     would result sometimes in 30 degree turns and sometimes in 150 degree turns. I next tried to use <code>millis</code>
                     to time how long a 90 degree turn would take. This was better, but also proved to be a little irregular. I think the best
-                    solution is to use a stepper motor in the future, since that gives precise control over how much the motor rotates. The final code
-                    I used is below.
+                    solution is to use a stepper motor in the future, since that gives precise control over how much the motor rotates. The only downside
+                    is how big the stepper motors are--it would be macromouse then. :( The final code I used is below.
                 </p>
 
 <pre style="text-align: left; height: 400px; overflow: scroll;"><code class="language-arduino">
@@ -378,9 +397,9 @@ void loop() {
 
     if (turningLeft == 0) {
         goStraight(ultrasonic.duration);
-    } else if (turningLeft == 1 && millis() - startTime < 400) {
+    } else if (turningLeft == 1 && millis() - startTime < 700) {
         turnLeft();
-    } else if (turningLeft == 1 && millis() - startTime >= 400) {
+    } else if (turningLeft == 1 && millis() - startTime >= 700) {
         turnedLeft = 1;
         turningLeft = 0;
     }
@@ -523,8 +542,26 @@ void loop() {
                     Since controlling the rotation angle using time was not going to work, I tried a different strategy: turning until the sensor
                     read a large enough value. Unfortunately, the sensor does not seem to be great at measuring distance when the wall
                     is at a diagonal, so it usually did not sense anything at all after micromouse had only turned 30-45 degrees and thus would
-                    try going straight. Here is a video of that behavior:
+                    try going straight. (This is because the ultrasonic sensor works by sending a signal and measuring how long it takes for it to come back.
+                    However, when the wall is at an angle, the signal bounces away and never returns.) Here is the modified <code>loop</code> function for
+                    this version and a video of that behavior:
                 </p>
+
+                <pre style="text-align: left; height: 275px; overflow: scroll;"><code class="language-arduino">
+void loop() {
+  ultrasonic.sendSignal();
+  ultrasonic.measureSignal();
+
+  if (turningLeft == 0) {
+    goStraight(ultrasonic.duration);
+  } else if (turningLeft == 1 && ultrasonic.duration < 17000) {
+    turnLeft();
+  } else {
+    turnedLeft = 1;
+    turningLeft = 0;
+  }
+}
+                </code></pre>
 
                 <video controls height="600">
                     <source src="turn2.mp4" type="video/mp4">
@@ -534,16 +571,12 @@ void loop() {
                     Conclusions and Next Steps
                 </h3>
 
-                <!-- <p style="text-align: left">
-                    Easy next steps include:
-                    <p style="text-align: left; margin-left: 40px">
-                        Reprinting the connector pieces with a slightly shorter height so that it supports the motors better.
-                     </p>
- 
-                     <p style="text-align: left; margin-left: 40px">
-                        Replace the USB power supply with a LiPo battery.
-                      </p>
-                </p> -->
+                <p style="text-align: left">
+                    Making micromouse was very hard but a lot of fun! There were a lot of unexpected problems that came up when
+                    trying to assemble the hardware; specifically, controlling the robot's movement was a lot harder than expected
+                    because of quirks with the sensor readings and the motor inprecision. I am proud that it was able to leave the L-shaped
+                    "maze" sometimes, but I wish we had more time to get to the real maze-solving part!
+                </p>
             </li>
             
         </ul>
